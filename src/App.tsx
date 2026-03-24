@@ -36,13 +36,36 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !supabase) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      if (resetError) throw resetError;
+      setSuccess('Link de recuperação enviado para o seu e-mail!');
+    } catch (err: any) {
+      setError(err.message || 'Erro ao enviar link de recuperação');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     if (!supabase) {
       setError('Supabase não configurado. Verifique as chaves API.');
@@ -98,7 +121,56 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {success && (
+          <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl border border-emerald-100 dark:border-emerald-800">
+            {success}
+          </div>
+        )}
+
+        {isForgotPassword ? (
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <input 
+                  type="email" 
+                  placeholder="seu@email.com"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <button 
+              type="submit"
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
+            >
+              {loading ? (
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Enviar Link de Recuperação'
+              )}
+            </button>
+            <div className="mt-4 text-center">
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setError(null);
+                  setSuccess(null);
+                }}
+                className="text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline"
+              >
+                Voltar para o Login
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
             <div className="relative">
@@ -138,6 +210,21 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
               isSignUp ? 'Cadastrar' : 'Entrar'
             )}
           </button>
+          {!isSignUp && (
+            <div className="text-right">
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(true);
+                  setError(null);
+                  setSuccess(null);
+                }}
+                className="text-xs text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-500 transition-colors"
+              >
+                Esqueci minha senha
+              </button>
+            </div>
+          )}
         </form>
 
         <div className="mt-6 text-center">
@@ -148,6 +235,8 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
             {isSignUp ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
           </button>
         </div>
+        </>
+        )}
       </motion.div>
     </div>
   );
@@ -160,7 +249,8 @@ const ProfileScreen = ({
   toggleDarkMode, 
   profileImage, 
   onImageUpload,
-  onUpdateUser
+  onUpdateUser,
+  onChangePassword
 }: { 
   user: any, 
   onLogout: () => void,
@@ -168,12 +258,18 @@ const ProfileScreen = ({
   toggleDarkMode: () => void,
   profileImage: string | null,
   onImageUpload: (file: File) => void,
-  onUpdateUser: (data: { display_name: string }) => Promise<void>
+  onUpdateUser: (data: { display_name: string }) => Promise<void>,
+  onChangePassword: (password: string) => Promise<void>
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.user_metadata?.display_name || user?.email?.split('@')[0] || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passError, setPassError] = useState<string | null>(null);
+  const [passLoading, setPassLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,6 +287,32 @@ const ProfileScreen = ({
       console.error('Erro ao atualizar nome:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassError(null);
+    if (newPassword !== confirmPassword) {
+      setPassError('As senhas não coincidem');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPassError('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setPassLoading(true);
+    try {
+      await onChangePassword(newPassword);
+      setIsChangingPassword(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      alert('Senha alterada com sucesso!');
+    } catch (error: any) {
+      setPassError(error.message || 'Erro ao alterar senha');
+    } finally {
+      setPassLoading(false);
     }
   };
 
@@ -288,13 +410,73 @@ const ProfileScreen = ({
           </button>
         </div>
 
-        <button className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        <button 
+          onClick={() => setIsChangingPassword(true)}
+          className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+        >
           <div className="flex items-center gap-3">
             <Lock size={20} className="text-slate-400" />
             <span>Alterar Senha</span>
           </div>
           <ChevronRight size={16} className="text-slate-300 dark:text-slate-600" />
         </button>
+
+        <AnimatePresence>
+          {isChangingPassword && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Alterar Senha</h2>
+                  <button onClick={() => setIsChangingPassword(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <X size={24} />
+                  </button>
+                </div>
+                <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
+                  {passError && (
+                    <div className="p-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-xs rounded-xl border border-rose-100 dark:border-rose-800">
+                      {passError}
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nova Senha</label>
+                    <input 
+                      type="password" 
+                      placeholder="Mínimo 6 caracteres"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirmar Senha</label>
+                    <input 
+                      type="password" 
+                      placeholder="Repita a nova senha"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={passLoading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+                  >
+                    {passLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Salvar Senha'}
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
         
         <button 
           onClick={onLogout}
@@ -371,6 +553,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'profile'>('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
   
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -394,8 +577,11 @@ export default function App() {
         const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user || null);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
           setUser(session?.user || null);
+          if (event === 'PASSWORD_RECOVERY') {
+            setIsRecoveringPassword(true);
+          }
         });
 
         return () => subscription.unsubscribe();
@@ -727,6 +913,79 @@ export default function App() {
     return result;
   }, [debts, filter, selectedCategory]);
 
+  if (isRecoveringPassword) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
+              <Lock size={32} />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-100 mb-2">
+            Nova Senha
+          </h1>
+          <p className="text-center text-slate-500 dark:text-slate-400 mb-8">
+            Digite sua nova senha abaixo.
+          </p>
+          
+          <form 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const newPassword = formData.get('password') as string;
+              if (!newPassword || !supabase) return;
+              
+              try {
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+                if (error) throw error;
+                alert('Senha atualizada com sucesso!');
+                setIsRecoveringPassword(false);
+              } catch (err: any) {
+                alert(err.message || 'Erro ao atualizar senha');
+              }
+            }} 
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nova Senha</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <input 
+                  name="password"
+                  type="password" 
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+            <button 
+              type="submit"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+            >
+              Definir Nova Senha
+            </button>
+            <div className="text-center mt-4">
+              <button 
+                type="button"
+                onClick={() => setIsRecoveringPassword(false)}
+                className="text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!user) {
     return <LoginScreen onLogin={handleLogin} />;
   }
@@ -738,6 +997,13 @@ export default function App() {
       });
       if (error) throw error;
       setUser(updatedUser.user);
+    }
+  };
+
+  const handlePasswordChange = async (password: string) => {
+    if (supabase) {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
     }
   };
 
@@ -1015,6 +1281,7 @@ export default function App() {
               profileImage={profileImage}
               onImageUpload={handleImageUpload}
               onUpdateUser={handleUpdateUser}
+              onChangePassword={handlePasswordChange}
             />
           )}
         </div>
