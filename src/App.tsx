@@ -22,7 +22,7 @@ import {
   Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Debt, Payment } from './types';
+import { Debt, Payment, Receivable } from './types';
 import { db, type User as LocalUser } from './lib/db';
 import { loginLocal, signupLocal, updatePasswordLocal, updateDisplayNameLocal } from './lib/auth';
 
@@ -456,7 +456,6 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isAddReceivableModalOpen, setIsAddReceivableModalOpen] = useState(false);
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -467,6 +466,20 @@ export default function App() {
   const [newDebt, setNewDebt] = useState({ description: '', totalAmount: '', category: '' });
   const [editingDebt, setEditingDebt] = useState<{ id: string, description: string, totalAmount: string, category: string } | null>(null);
   const [newPayment, setNewPayment] = useState({ amount: '' });
+
+  // Receivable states
+  const [receivables, setReceivables] = useState<Receivable[]>([]);
+  const [isAddReceivableModalOpen, setIsAddReceivableModalOpen] = useState(false);
+  const [isEditReceivableModalOpen, setIsEditReceivableModalOpen] = useState(false);
+  const [isReceivablePaymentModalOpen, setIsReceivablePaymentModalOpen] = useState(false);
+  const [selectedReceivableId, setSelectedReceivableId] = useState<string | null>(null);
+  const [filterReceivable, setFilterReceivable] = useState<'all' | 'received' | 'pending'>('all');
+  const [selectedReceivableCategory, setSelectedReceivableCategory] = useState<string>('all');
+
+  // Receivable form states
+  const [newReceivable, setNewReceivable] = useState({ description: '', totalAmount: '', category: '' });
+  const [editingReceivable, setEditingReceivable] = useState<{ id: string, description: string, totalAmount: string, category: string } | null>(null);
+  const [newReceivablePayment, setNewReceivablePayment] = useState({ amount: '' });
 
   // Load settings
   useEffect(() => {
@@ -505,6 +518,7 @@ export default function App() {
     const loadData = async () => {
       if (!user) {
         setDebts([]);
+        setReceivables([]);
         return;
       }
 
@@ -527,6 +541,26 @@ export default function App() {
         });
       }
       setDebts(formattedDebts);
+
+      const receivablesData = await db.receivables.where('user_id').equals(user.id).toArray();
+      const formattedReceivables: Receivable[] = [];
+      for (const r of receivablesData) {
+        const rPayments = await db.receivable_payments.where('receivable_id').equals(r.id).toArray();
+        formattedReceivables.push({
+          id: r.id,
+          description: r.description,
+          category: r.category || undefined,
+          totalAmount: r.total_amount,
+          receivedAmount: r.received_amount,
+          createdAt: r.created_at,
+          payments: rPayments.map(p => ({
+            id: p.id,
+            amount: p.amount,
+            date: p.date,
+          })),
+        });
+      }
+      setReceivables(formattedReceivables);
     };
 
     loadData();
@@ -698,6 +732,128 @@ export default function App() {
     }
   };
 
+  const handleAddReceivable = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReceivable.description || !newReceivable.totalAmount) return;
+
+    const receivable: Receivable = {
+      id: crypto.randomUUID(),
+      description: newReceivable.description,
+      category: newReceivable.category.trim() || undefined,
+      totalAmount: parseFloat(newReceivable.totalAmount),
+      receivedAmount: 0,
+      payments: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    if (user) {
+      try {
+        await db.receivables.add({
+          id: receivable.id,
+          user_id: user.id,
+          description: receivable.description,
+          category: newReceivable.category.trim() || undefined,
+          total_amount: receivable.totalAmount,
+          received_amount: 0,
+          created_at: receivable.createdAt,
+        });
+      } catch (err) {
+        console.error('Erro ao salvar conta a receber:', err);
+      }
+    }
+
+    setReceivables([...receivables, receivable]);
+    setNewReceivable({ description: '', totalAmount: '', category: '' });
+    setIsAddReceivableModalOpen(false);
+  };
+
+  const handleEditReceivable = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReceivable || !editingReceivable.description || !editingReceivable.totalAmount) return;
+
+    const updatedTotal = parseFloat(editingReceivable.totalAmount);
+
+    if (user) {
+      try {
+        await db.receivables.update(editingReceivable.id, {
+          description: editingReceivable.description,
+          category: editingReceivable.category.trim() || undefined,
+          total_amount: updatedTotal,
+        });
+      } catch (err) {
+        console.error('Erro ao atualizar conta a receber:', err);
+      }
+    }
+
+    setReceivables(prev => prev.map(r =>
+      r.id === editingReceivable.id
+        ? { ...r, description: editingReceivable.description, totalAmount: updatedTotal, category: editingReceivable.category.trim() || undefined }
+        : r
+    ));
+    setEditingReceivable(null);
+    setIsEditReceivableModalOpen(false);
+  };
+
+  const handleAddReceivablePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReceivableId || !newReceivablePayment.amount) return;
+
+    const amount = parseFloat(newReceivablePayment.amount);
+    const paymentId = crypto.randomUUID();
+    const date = new Date().toISOString();
+
+    try {
+      await db.receivable_payments.add({
+        id: paymentId,
+        receivable_id: selectedReceivableId,
+        amount: amount,
+        date: date,
+      });
+    } catch (err) {
+      console.error('Erro ao salvar recebimento:', err);
+    }
+
+    const receivable = receivables.find(r => r.id === selectedReceivableId);
+    if (receivable) {
+      try {
+        await db.receivables.update(selectedReceivableId, {
+          received_amount: Math.min(receivable.receivedAmount + amount, receivable.totalAmount),
+        });
+      } catch (err) {
+        console.error('Erro ao atualizar valor recebido:', err);
+      }
+    }
+
+    setReceivables(prev => prev.map(r => {
+      if (r.id === selectedReceivableId) {
+        const updatedReceived = Math.min(r.receivedAmount + amount, r.totalAmount);
+        const payment: Payment = { id: paymentId, amount, date };
+        return { ...r, receivedAmount: updatedReceived, payments: [payment, ...r.payments] };
+      }
+      return r;
+    }));
+
+    setNewReceivablePayment({ amount: '' });
+    setIsReceivablePaymentModalOpen(false);
+    setSelectedReceivableId(null);
+  };
+
+  const deleteReceivable = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir esta conta a receber?')) {
+      try {
+        await db.receivable_payments.where('receivable_id').equals(id).delete();
+      } catch (err) {
+        console.error('Erro ao deletar recebimentos:', err);
+      }
+      try {
+        await db.receivables.delete(id);
+      } catch (err) {
+        console.error('Erro ao deletar conta a receber:', err);
+      }
+      setReceivables(receivables.filter(r => r.id !== id));
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -748,6 +904,42 @@ export default function App() {
     
     return result;
   }, [debts, filter, selectedCategory]);
+
+  const receivableCategories = useMemo(() => {
+    const cats = receivables
+      .map(r => r.category?.trim())
+      .filter((c): c is string => !!c);
+    const uniqueCatsMap = new Map<string, string>();
+    cats.forEach(cat => {
+      const lower = cat.toLowerCase();
+      if (!uniqueCatsMap.has(lower)) uniqueCatsMap.set(lower, cat);
+    });
+    return ['all', ...Array.from(uniqueCatsMap.values())];
+  }, [receivables]);
+
+  const receivableStats = useMemo(() => {
+    const filteredByCategory = selectedReceivableCategory === 'all'
+      ? receivables
+      : receivables.filter(r => r.category?.toLowerCase() === selectedReceivableCategory.toLowerCase());
+    const totalReceivable = filteredByCategory.reduce((acc, r) => acc + r.totalAmount, 0);
+    const totalReceived = filteredByCategory.reduce((acc, r) => acc + r.receivedAmount, 0);
+    const remaining = totalReceivable - totalReceived;
+    const overallProgress = totalReceivable > 0 ? (totalReceived / totalReceivable) * 100 : 0;
+    return { totalReceivable, totalReceived, remaining, overallProgress };
+  }, [receivables, selectedReceivableCategory]);
+
+  const filteredReceivables = useMemo(() => {
+    let result = receivables;
+    if (selectedReceivableCategory !== 'all') {
+      result = result.filter(r => r.category?.toLowerCase() === selectedReceivableCategory.toLowerCase());
+    }
+    if (filterReceivable === 'received') {
+      result = result.filter(r => r.receivedAmount >= r.totalAmount);
+    } else if (filterReceivable === 'pending') {
+      result = result.filter(r => r.receivedAmount < r.totalAmount);
+    }
+    return result;
+  }, [receivables, filterReceivable, selectedReceivableCategory]);
 
   if (!user) {
     return <LoginScreen onLogin={handleLogin} />;
