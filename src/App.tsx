@@ -1272,6 +1272,231 @@ export default function App() {
             </div>
           )}
 
+          {currentView === 'receivable' && (
+            <div className="px-4 py-8 flex flex-col">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 order-2 sm:order-1">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                >
+                  <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total a Receber</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.totalReceivable)}</p>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                >
+                  <p className="text-emerald-500 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Recebido</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.totalReceived)}</p>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                >
+                  <p className="text-rose-500 dark:text-rose-400 text-xs font-semibold uppercase tracking-wider mb-1">Restante</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.remaining)}</p>
+                </motion.div>
+              </div>
+
+              {/* Status Filters */}
+              <div className="mb-4 order-1 sm:order-2">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+                  <button 
+                    onClick={() => setFilterReceivable('all')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${filterReceivable === 'all' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 dark:shadow-none' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}
+                  >
+                    Todas ({receivables.length})
+                  </button>
+                  <button 
+                    onClick={() => setFilterReceivable('pending')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${filterReceivable === 'pending' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 dark:shadow-none' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}
+                  >
+                    A Receber ({receivables.filter(r => r.receivedAmount < r.totalAmount).length})
+                  </button>
+                  <button 
+                    onClick={() => setFilterReceivable('received')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${filterReceivable === 'received' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 dark:shadow-none' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}
+                  >
+                    Recebidas ({receivables.filter(r => r.receivedAmount >= r.totalAmount).length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Category Filters */}
+              {receivableCategories.length > 1 && (
+                <div className="mb-6 order-3">
+                  <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-2">Categorias:</span>
+                    {receivableCategories.map(cat => (
+                      <button 
+                        key={cat}
+                        onClick={() => setSelectedReceivableCategory(cat)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${selectedReceivableCategory === cat ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                      >
+                        {cat === 'all' ? 'Todos' : cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Receivable List */}
+              <div className="space-y-4 order-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  <TrendingUp size={20} className="text-emerald-500" />
+                  {filterReceivable === 'all' ? 'Minhas Contas a Receber' : filterReceivable === 'received' ? 'Contas Recebidas' : 'Contas a Receber'}
+                </h2>
+                
+                {filteredReceivables.length === 0 ? (
+                  <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-500">
+                      <TrendingUp size={32} />
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400">Nenhuma conta a receber encontrada.</p>
+                    {filterReceivable !== 'all' && (
+                      <button 
+                        onClick={() => setFilterReceivable('all')}
+                        className="mt-4 text-emerald-600 dark:text-emerald-500 font-medium hover:underline"
+                      >
+                        Ver todas as contas
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {filteredReceivables.map((receivable, index) => {
+                      const progress = receivable.totalAmount > 0 ? (receivable.receivedAmount / receivable.totalAmount) * 100 : 0;
+                      const isReceived = receivable.receivedAmount >= receivable.totalAmount;
+
+                      return (
+                        <motion.div
+                          key={receivable.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-all group"
+                        >
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{receivable.description}</h3>
+                                {receivable.category && (
+                                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded-md uppercase tracking-tighter">
+                                    {receivable.category}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                                {new Date(receivable.createdAt).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={() => {
+                                  setEditingReceivable({
+                                    id: receivable.id,
+                                    description: receivable.description,
+                                    totalAmount: receivable.totalAmount.toString(),
+                                    category: receivable.category || ''
+                                  });
+                                  setIsEditReceivableModalOpen(true);
+                                }}
+                                className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                                title="Editar"
+                              >
+                                <Edit2 size={18} />
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setSelectedReceivableId(receivable.id);
+                                  setIsReceivablePaymentModalOpen(true);
+                                }}
+                                disabled={isReceived}
+                                className={`p-2 rounded-lg transition-colors ${isReceived ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-700' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'}`}
+                                title="Registrar Recebimento"
+                              >
+                                <DollarSign size={18} />
+                              </button>
+                              <button 
+                                onClick={() => deleteReceivable(receivable.id)}
+                                className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
+                                title="Excluir"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-slate-500 dark:text-slate-400">
+                                Recebido: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(receivable.receivedAmount)}</span>
+                              </span>
+                              <span className="text-slate-500 dark:text-slate-400">
+                                Total: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(receivable.totalAmount)}</span>
+                              </span>
+                            </div>
+
+                            <div className="relative h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                className={`h-full rounded-full ${isReceived ? 'bg-emerald-500' : 'bg-emerald-400'}`}
+                              />
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-1 text-xs font-medium">
+                                {isReceived ? (
+                                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                    <CheckCircle2 size={14} /> Recebida
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 dark:text-slate-500">
+                                    Faltam {formatCurrency(receivable.totalAmount - receivable.receivedAmount)}
+                                  </span>
+                                )}
+                              </div>
+                              <span className={`text-sm font-bold ${isReceived ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                                {progress.toFixed(0)}%
+                              </span>
+                            </div>
+                          </div>
+
+                          {receivable.payments.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-800">
+                              <details className="group/details">
+                                <summary className="text-xs font-medium text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 list-none">
+                                  <History size={12} />
+                                  Ver histórico de recebimentos
+                                  <ChevronRight size={12} className="group-open/details:rotate-90 transition-transform" />
+                                </summary>
+                                <div className="mt-2 space-y-2">
+                                  {receivable.payments.map(p => (
+                                    <div key={p.id} className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-md">
+                                      <span>{new Date(p.date).toLocaleDateString('pt-BR')}</span>
+                                      <span className="font-bold text-emerald-600 dark:text-emerald-400">+{formatCurrency(p.amount)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            </div>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {currentView === 'profile' && (
             <ProfileScreen 
               user={user} 
