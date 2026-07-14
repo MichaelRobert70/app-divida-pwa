@@ -73,10 +73,10 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
           </div>
         </div>
         <h1 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-100 mb-2">
-          {isSignUp ? 'Criar Conta' : 'Bem-vindo ao Dívidas'}
+          {isSignUp ? 'Criar Conta' : 'Bem-vindo ao Minhas Contas'}
         </h1>
         <p className="text-center text-slate-500 dark:text-slate-400 mb-8">
-          {isSignUp ? 'Cadastre-se para gerenciar suas dívidas.' : 'Gerencie suas dívidas de forma simples e eficiente.'}
+          {isSignUp ? 'Cadastre-se para gerenciar suas contas.' : 'Gerencie suas contas a pagar e a receber de forma simples.'}
         </p>
         
         {error && (
@@ -421,7 +421,7 @@ const PWAInstallPrompt = ({
             <TrendingDown size={28} />
           </div>
           <div>
-            <p className="font-bold text-base">Instalar Dívidas</p>
+            <p className="font-bold text-base">Instalar Minhas Contas</p>
             <p className="text-xs text-emerald-100">Acesso rápido direto da sua tela</p>
           </div>
         </div>
@@ -781,7 +781,7 @@ export default function App() {
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white">
               <TrendingDown size={20} />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Dívidas</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Minhas Contas</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-sm text-slate-500 dark:text-slate-400">
