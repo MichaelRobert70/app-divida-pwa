@@ -390,7 +390,7 @@ const ProfileScreen = ({
       </div>
       
       <div className="mt-12 text-center">
-        <p className="text-xs text-slate-400 dark:text-slate-600">Versão 1.1.0</p>
+        <p className="text-xs text-slate-400 dark:text-slate-600">Versão 1.2.0</p>
         <p className="text-xs text-slate-300 dark:text-slate-700 mt-1">Feito com ❤️ por Minhas Contas</p>
       </div>
     </div>
