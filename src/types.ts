@@ -20,3 +20,20 @@ export type DebtSummary = {
   remaining: number;
   overallProgress: number;
 };
+
+export interface Receivable {
+  id: string;
+  description: string;
+  category?: string;
+  totalAmount: number;
+  receivedAmount: number;
+  payments: Payment[];
+  createdAt: string;
+}
+
+export type ReceivableSummary = {
+  totalReceivable: number;
+  totalReceived: number;
+  remaining: number;
+  overallProgress: number;
+};
