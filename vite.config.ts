@@ -14,9 +14,9 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
-          name: 'Dívidas',
-          short_name: 'Dívidas',
-          description: 'Controle suas dívidas e pagamentos de forma simples e elegante.',
+          name: 'Minhas Contas',
+          short_name: 'Minhas Contas',
+          description: 'Controle suas contas a pagar e a receber de forma simples e elegante.',
           theme_color: '#10b981',
           background_color: '#020617',
           display: 'standalone',
