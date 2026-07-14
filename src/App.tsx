@@ -1020,7 +1020,7 @@ export default function App() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Contas a Pagar</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Dívidas e pagamentos</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Contas e pagamentos</p>
                   </div>
                   <ChevronRight className="text-slate-300 dark:text-slate-600" size={24} />
                 </motion.button>
@@ -1517,9 +1517,9 @@ export default function App() {
         <div className="max-w-md mx-auto flex justify-between items-center h-16">
           <button 
             onClick={() => setCurrentView('home')}
-            className={`flex flex-col items-center gap-1 transition-colors ${(currentView === 'home' || currentView === 'payable') ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            className={`flex flex-col items-center gap-1 transition-colors ${(currentView === 'home' || currentView === 'payable' || currentView === 'receivable') ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
-            <Home size={24} strokeWidth={(currentView === 'home' || currentView === 'payable') ? 2.5 : 2} />
+            <Home size={24} strokeWidth={(currentView === 'home' || currentView === 'payable' || currentView === 'receivable') ? 2.5 : 2} />
             <span className="text-[10px] font-medium">Início</span>
           </button>
 
