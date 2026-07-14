@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Debt, Payment } from './types';
-import { supabase } from './lib/supabase';
+import { db, type User as LocalUser } from './lib/db';
+import { loginLocal, signupLocal, updatePasswordLocal, updateDisplayNameLocal } from './lib/auth';
 
-const STORAGE_KEY = 'debt_master_data_v2';
 const AUTH_KEY = 'debt_master_auth_v2';
 const THEME_KEY = 'debt_master_theme_v2';
 const PROFILE_IMAGE_KEY = 'debt_master_profile_image_v2';
@@ -36,58 +36,22 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !supabase) return;
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
-      });
-      if (resetError) throw resetError;
-      setSuccess('Link de recuperação enviado para o seu e-mail!');
-    } catch (err: any) {
-      setError(err.message || 'Erro ao enviar link de recuperação');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     setLoading(true);
     setError(null);
-    setSuccess(null);
-
-    if (!supabase) {
-      setError('Supabase não configurado. Verifique as chaves API.');
-      setLoading(false);
-      return;
-    }
 
     try {
       if (isSignUp) {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (signUpError) throw signUpError;
-        if (data.user) onLogin(data.user);
+        const user = await signupLocal(email, password, email.split('@')[0]);
+        onLogin(user);
       } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) throw signInError;
-        if (data.user) onLogin(data.user);
+        const user = await loginLocal(email, password);
+        if (!user) throw new Error('Email ou senha invalidos');
+        onLogin(user);
       }
     } catch (err: any) {
       setError(err.message || 'Ocorreu um erro na autenticação');
@@ -121,56 +85,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
           </div>
         )}
 
-        {success && (
-          <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl border border-emerald-100 dark:border-emerald-800">
-            {success}
-          </div>
-        )}
-
-        {isForgotPassword ? (
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                <input 
-                  type="email" 
-                  placeholder="seu@email.com"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <button 
-              type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                'Enviar Link de Recuperação'
-              )}
-            </button>
-            <div className="mt-4 text-center">
-              <button 
-                type="button"
-                onClick={() => {
-                  setIsForgotPassword(false);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline"
-              >
-                Voltar para o Login
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
             <div className="relative">
@@ -210,21 +125,6 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
               isSignUp ? 'Cadastrar' : 'Entrar'
             )}
           </button>
-          {!isSignUp && (
-            <div className="text-right">
-              <button 
-                type="button"
-                onClick={() => {
-                  setIsForgotPassword(true);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="text-xs text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-500 transition-colors"
-              >
-                Esqueci minha senha
-              </button>
-            </div>
-          )}
         </form>
 
         <div className="mt-6 text-center">
@@ -235,8 +135,6 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
             {isSignUp ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
           </button>
         </div>
-        </>
-        )}
       </motion.div>
     </div>
   );
@@ -263,7 +161,7 @@ const ProfileScreen = ({
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [newName, setNewName] = useState(user?.user_metadata?.display_name || user?.email?.split('@')[0] || '');
+  const [newName, setNewName] = useState(user?.display_name || user?.email?.split('@')[0] || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -316,7 +214,7 @@ const ProfileScreen = ({
     }
   };
 
-  const userDisplayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Usuário';
+  const userDisplayName = user?.display_name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="p-6">
@@ -368,7 +266,7 @@ const ProfileScreen = ({
                   <button 
                     onClick={() => {
                       setIsEditingName(false);
-                      setNewName(user?.user_metadata?.display_name || user?.email?.split('@')[0] || '');
+                      setNewName(user?.display_name || user?.email?.split('@')[0] || '');
                     }}
                     className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-3 py-1.5 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-700"
                   >
@@ -553,8 +451,6 @@ export default function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'profile'>('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
-  
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -570,26 +466,8 @@ export default function App() {
   const [editingDebt, setEditingDebt] = useState<{ id: string, description: string, totalAmount: string, category: string } | null>(null);
   const [newPayment, setNewPayment] = useState({ amount: '' });
 
-  // Load auth and settings
+  // Load settings
   useEffect(() => {
-    const checkAuth = async () => {
-      if (supabase) {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user || null);
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          setUser(session?.user || null);
-          if (event === 'PASSWORD_RECOVERY') {
-            setIsRecoveringPassword(true);
-          }
-        });
-
-        return () => subscription.unsubscribe();
-      }
-    };
-
-    checkAuth();
-    
     const savedTheme = localStorage.getItem(THEME_KEY);
     const savedImage = localStorage.getItem(PROFILE_IMAGE_KEY);
 
@@ -628,58 +506,29 @@ export default function App() {
         return;
       }
 
-      // Try Supabase first if configured
-      if (supabase) {
-        try {
-          const { data: debtsData, error: debtsError } = await supabase
-            .from('debts')
-            .select('*, payments(*)')
-            .eq('user_id', user.id);
-          
-          if (debtsError) throw debtsError;
-          
-          if (debtsData) {
-            console.log("Dados carregados do Supabase:", debtsData);
-            const formattedDebts: Debt[] = debtsData.map(d => ({
-              id: d.id,
-              description: d.description,
-              category: d.category || undefined,
-              totalAmount: parseFloat(d.total_amount),
-              paidAmount: parseFloat(d.paid_amount),
-              createdAt: d.created_at,
-              payments: (d.payments || []).map((p: any) => ({
-                id: p.id,
-                amount: parseFloat(p.amount),
-                date: p.date
-              }))
-            }));
-            setDebts(formattedDebts);
-            return;
-          }
-        } catch (e) {
-          console.error("Supabase fetch failed, falling back to localStorage", e);
-        }
+      const debtsData = await db.debts.where('user_id').equals(user.id).toArray();
+      const formattedDebts: Debt[] = [];
+      for (const d of debtsData) {
+        const payments = await db.payments.where('debt_id').equals(d.id).toArray();
+        formattedDebts.push({
+          id: d.id,
+          description: d.description,
+          category: d.category || undefined,
+          totalAmount: d.total_amount,
+          paidAmount: d.paid_amount,
+          createdAt: d.created_at,
+          payments: payments.map(p => ({
+            id: p.id,
+            amount: p.amount,
+            date: p.date,
+          })),
+        });
       }
-
-      // Fallback to localStorage
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setDebts(parsed);
-        } catch (e) {
-          console.error("Failed to parse saved debts", e);
-        }
-      }
+      setDebts(formattedDebts);
     };
 
     loadData();
   }, [user]);
-
-  // Save data to localStorage as backup
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(debts));
-  }, [debts]);
 
   const handleLogin = (user: any) => {
     setUser(user);
@@ -697,10 +546,7 @@ export default function App() {
     }
   };
 
-  const handleLogout = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+  const handleLogout = () => {
     setUser(null);
     setCurrentView('dashboard');
   };
@@ -729,27 +575,17 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
 
-    // Save to Supabase
-    if (supabase && user) {
-      try {
-        const { data, error } = await supabase.from('debts').insert({
-          id: debt.id,
-          description: debt.description,
-          category: newDebt.category.trim() || null,
-          total_amount: debt.totalAmount,
-          paid_amount: 0,
-          user_id: user.id
-        }).select();
-        
-        if (error) {
-          console.error("Erro ao salvar no Supabase:", error);
-          alert("Erro ao salvar no banco de dados: " + error.message);
-        } else {
-          console.log("Dívida salva com sucesso:", data);
-        }
-      } catch (e) {
-        console.error("Falha crítica ao salvar no Supabase", e);
-      }
+    // Save to IndexedDB
+    if (user) {
+      await db.debts.add({
+        id: debt.id,
+        user_id: user.id,
+        description: debt.description,
+        category: newDebt.category.trim() || undefined,
+        total_amount: debt.totalAmount,
+        paid_amount: 0,
+        created_at: debt.createdAt,
+      });
     }
 
     setDebts([...debts, debt]);
@@ -763,24 +599,13 @@ export default function App() {
 
     const updatedTotal = parseFloat(editingDebt.totalAmount);
     
-    // Save to Supabase
-    if (supabase && user) {
-      try {
-        const { data, error } = await supabase.from('debts').update({
-          description: editingDebt.description,
-          category: editingDebt.category.trim() || null,
-          total_amount: updatedTotal,
-        }).eq('id', editingDebt.id).select();
-        
-        if (error) {
-          console.error("Erro ao atualizar no Supabase:", error);
-          alert("Erro ao atualizar no banco de dados: " + error.message);
-        } else {
-          console.log("Dívida atualizada com sucesso:", data);
-        }
-      } catch (e) {
-        console.error("Falha crítica ao atualizar no Supabase", e);
-      }
+    // Save to IndexedDB
+    if (user) {
+      await db.debts.update(editingDebt.id, {
+        description: editingDebt.description,
+        category: editingDebt.category.trim() || undefined,
+        total_amount: updatedTotal,
+      });
     }
 
     setDebts(prev => prev.map(d => 
@@ -800,29 +625,20 @@ export default function App() {
     const paymentId = crypto.randomUUID();
     const date = new Date().toISOString();
 
-    // Save to Supabase
-    if (supabase) {
-      try {
-        const { error: pError } = await supabase.from('payments').insert({
-          id: paymentId,
-          debt_id: selectedDebtId,
-          amount: amount,
-          date: date
-        });
-        if (pError) throw pError;
+    // Save to IndexedDB
+    await db.payments.add({
+      id: paymentId,
+      debt_id: selectedDebtId,
+      amount: amount,
+      date: date,
+    });
 
-        // Update paid_amount in debts table
-        const debt = debts.find(d => d.id === selectedDebtId);
-        if (debt) {
-          const { error: dError } = await supabase
-            .from('debts')
-            .update({ paid_amount: Math.min(debt.paidAmount + amount, debt.totalAmount) })
-            .eq('id', selectedDebtId);
-          if (dError) throw dError;
-        }
-      } catch (e) {
-        console.error("Failed to save payment to Supabase", e);
-      }
+    // Update paid_amount in debts table
+    const debt = debts.find(d => d.id === selectedDebtId);
+    if (debt) {
+      await db.debts.update(selectedDebtId, {
+        paid_amount: Math.min(debt.paidAmount + amount, debt.totalAmount),
+      });
     }
     
     setDebts(prev => prev.map(debt => {
@@ -849,15 +665,9 @@ export default function App() {
 
   const deleteDebt = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta dívida?')) {
-      // Delete from Supabase
-      if (supabase) {
-        try {
-          const { error } = await supabase.from('debts').delete().eq('id', id);
-          if (error) throw error;
-        } catch (e) {
-          console.error("Failed to delete from Supabase", e);
-        }
-      }
+      // Delete from IndexedDB
+      await db.payments.where('debt_id').equals(id).delete();
+      await db.debts.delete(id);
       setDebts(debts.filter(d => d.id !== id));
     }
   };
@@ -913,101 +723,20 @@ export default function App() {
     return result;
   }, [debts, filter, selectedCategory]);
 
-  if (isRecoveringPassword) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800"
-        >
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
-              <Lock size={32} />
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-100 mb-2">
-            Nova Senha
-          </h1>
-          <p className="text-center text-slate-500 dark:text-slate-400 mb-8">
-            Digite sua nova senha abaixo.
-          </p>
-          
-          <form 
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const newPassword = formData.get('password') as string;
-              if (!newPassword || !supabase) return;
-              
-              try {
-                const { error } = await supabase.auth.updateUser({ password: newPassword });
-                if (error) throw error;
-                alert('Senha atualizada com sucesso!');
-                setIsRecoveringPassword(false);
-              } catch (err: any) {
-                alert(err.message || 'Erro ao atualizar senha');
-              }
-            }} 
-            className="space-y-4"
-          >
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nova Senha</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                <input 
-                  name="password"
-                  type="password" 
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-            <button 
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
-            >
-              Definir Nova Senha
-            </button>
-            <div className="text-center mt-4">
-              <button 
-                type="button"
-                onClick={() => setIsRecoveringPassword(false)}
-                className="text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </div>
-    );
-  }
-
   if (!user) {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
   const handleUpdateUser = async (data: { display_name: string }) => {
-    if (supabase) {
-      const { data: updatedUser, error } = await supabase.auth.updateUser({
-        data: { display_name: data.display_name }
-      });
-      if (error) throw error;
-      setUser(updatedUser.user);
-    }
+    await updateDisplayNameLocal(user.id, data.display_name);
+    setUser((prev: any) => prev ? { ...prev, display_name: data.display_name } : prev);
   };
 
   const handlePasswordChange = async (password: string) => {
-    if (supabase) {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-    }
+    await updatePasswordLocal(user.id, password);
   };
 
-  const userDisplayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Usuário';
+  const userDisplayName = user?.display_name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-colors duration-300 no-scrollbar">
