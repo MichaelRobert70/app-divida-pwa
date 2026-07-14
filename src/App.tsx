@@ -447,7 +447,7 @@ const PWAInstallPrompt = ({
 // --- Main App ---
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<LocalUser | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'profile'>('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -530,7 +530,7 @@ export default function App() {
     loadData();
   }, [user]);
 
-  const handleLogin = (user: any) => {
+  const handleLogin = (user: LocalUser) => {
     setUser(user);
   };
 
@@ -577,15 +577,19 @@ export default function App() {
 
     // Save to IndexedDB
     if (user) {
-      await db.debts.add({
-        id: debt.id,
-        user_id: user.id,
-        description: debt.description,
-        category: newDebt.category.trim() || undefined,
-        total_amount: debt.totalAmount,
-        paid_amount: 0,
-        created_at: debt.createdAt,
-      });
+      try {
+        await db.debts.add({
+          id: debt.id,
+          user_id: user.id,
+          description: debt.description,
+          category: newDebt.category.trim() || undefined,
+          total_amount: debt.totalAmount,
+          paid_amount: 0,
+          created_at: debt.createdAt,
+        });
+      } catch (err) {
+        console.error('Erro ao salvar dívida:', err);
+      }
     }
 
     setDebts([...debts, debt]);
@@ -601,11 +605,15 @@ export default function App() {
     
     // Save to IndexedDB
     if (user) {
-      await db.debts.update(editingDebt.id, {
-        description: editingDebt.description,
-        category: editingDebt.category.trim() || undefined,
-        total_amount: updatedTotal,
-      });
+      try {
+        await db.debts.update(editingDebt.id, {
+          description: editingDebt.description,
+          category: editingDebt.category.trim() || undefined,
+          total_amount: updatedTotal,
+        });
+      } catch (err) {
+        console.error('Erro ao atualizar dívida:', err);
+      }
     }
 
     setDebts(prev => prev.map(d => 
@@ -626,19 +634,27 @@ export default function App() {
     const date = new Date().toISOString();
 
     // Save to IndexedDB
-    await db.payments.add({
-      id: paymentId,
-      debt_id: selectedDebtId,
-      amount: amount,
-      date: date,
-    });
+    try {
+      await db.payments.add({
+        id: paymentId,
+        debt_id: selectedDebtId,
+        amount: amount,
+        date: date,
+      });
+    } catch (err) {
+      console.error('Erro ao salvar pagamento:', err);
+    }
 
     // Update paid_amount in debts table
     const debt = debts.find(d => d.id === selectedDebtId);
     if (debt) {
-      await db.debts.update(selectedDebtId, {
-        paid_amount: Math.min(debt.paidAmount + amount, debt.totalAmount),
-      });
+      try {
+        await db.debts.update(selectedDebtId, {
+          paid_amount: Math.min(debt.paidAmount + amount, debt.totalAmount),
+        });
+      } catch (err) {
+        console.error('Erro ao atualizar valor pago:', err);
+      }
     }
     
     setDebts(prev => prev.map(debt => {
@@ -666,8 +682,16 @@ export default function App() {
   const deleteDebt = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta dívida?')) {
       // Delete from IndexedDB
-      await db.payments.where('debt_id').equals(id).delete();
-      await db.debts.delete(id);
+      try {
+        await db.payments.where('debt_id').equals(id).delete();
+      } catch (err) {
+        console.error('Erro ao deletar pagamentos:', err);
+      }
+      try {
+        await db.debts.delete(id);
+      } catch (err) {
+        console.error('Erro ao deletar dívida:', err);
+      }
       setDebts(debts.filter(d => d.id !== id));
     }
   };
