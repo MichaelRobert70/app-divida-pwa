@@ -390,7 +390,7 @@ const ProfileScreen = ({
       
       <div className="mt-12 text-center">
         <p className="text-xs text-slate-400 dark:text-slate-600">Versão 1.1.0</p>
-        <p className="text-xs text-slate-300 dark:text-slate-700 mt-1">Feito com ❤️ por Dívidas</p>
+        <p className="text-xs text-slate-300 dark:text-slate-700 mt-1">Feito com ❤️ por Minhas Contas</p>
       </div>
     </div>
   );
@@ -680,7 +680,7 @@ export default function App() {
   };
 
   const deleteDebt = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta dívida?')) {
+    if (confirm('Tem certeza que deseja excluir esta conta a pagar?')) {
       // Delete from IndexedDB
       try {
         await db.payments.where('debt_id').equals(id).delete();
@@ -809,7 +809,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
-                  <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total em Dívidas</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total a Pagar</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.total)}</p>
                 </motion.div>
                 <motion.div 
@@ -878,7 +878,7 @@ export default function App() {
               <div className="space-y-4 order-4">
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                   <CreditCard size={20} className="text-slate-400 dark:text-slate-500" />
-                  {filter === 'all' ? 'Minhas Dívidas' : filter === 'paid' ? 'Dívidas Pagas' : 'Dívidas a Pagar'}
+                  {filter === 'all' ? 'Minhas Contas a Pagar' : filter === 'paid' ? 'Contas Pagas' : 'Contas a Pagar'}
                 </h2>
                 
                 {filteredDebts.length === 0 ? (
@@ -886,13 +886,13 @@ export default function App() {
                     <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-500">
                       <PieChart size={32} />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400">Nenhuma dívida encontrada.</p>
+                    <p className="text-slate-500 dark:text-slate-400">Nenhuma conta a pagar encontrada.</p>
                     {filter !== 'all' && (
                       <button 
                         onClick={() => setFilter('all')}
                         className="mt-4 text-emerald-600 dark:text-emerald-500 font-medium hover:underline"
                       >
-                        Ver todas as dívidas
+                        Ver todas as contas
                       </button>
                     )}
                   </div>
@@ -1079,7 +1079,7 @@ export default function App() {
               className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
             >
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Nova Dívida</h2>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Nova Conta a Pagar</h2>
                 <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                   <X size={24} />
                 </button>
@@ -1128,7 +1128,7 @@ export default function App() {
                   type="submit"
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
-                  Adicionar Dívida
+                  Adicionar Conta a Pagar
                 </button>
               </form>
             </motion.div>
@@ -1147,7 +1147,7 @@ export default function App() {
               className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
             >
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Editar Dívida</h2>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Editar Conta a Pagar</h2>
                 <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                   <X size={24} />
                 </button>
@@ -1222,7 +1222,7 @@ export default function App() {
               </div>
               <form onSubmit={handleAddPayment} className="p-6 space-y-4">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Dívida: <span className="font-bold text-slate-700 dark:text-slate-200">
+                  Conta: <span className="font-bold text-slate-700 dark:text-slate-200">
                     {debts.find(d => d.id === selectedDebtId)?.description}
                   </span>
                 </p>
