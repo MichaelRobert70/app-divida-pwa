@@ -3,8 +3,9 @@ import {
   Plus, 
   Trash2, 
   DollarSign, 
-  TrendingDown, 
-  CheckCircle2, 
+  TrendingDown,
+  TrendingUp,
+  CheckCircle2,
   ChevronRight, 
   History,
   X,
@@ -448,13 +449,14 @@ const PWAInstallPrompt = ({
 
 export default function App() {
   const [user, setUser] = useState<LocalUser | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'profile'>('dashboard');
+  const [currentView, setCurrentView] = useState<'home' | 'payable' | 'receivable' | 'profile'>('home');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isAddReceivableModalOpen, setIsAddReceivableModalOpen] = useState(false);
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -548,7 +550,7 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
-    setCurrentView('dashboard');
+    setCurrentView('home');
   };
 
   const handleImageUpload = (file: File) => {
@@ -800,7 +802,60 @@ export default function App() {
       {/* Main Content Area - Scrollable with hidden scrollbar */}
       <main className="flex-1 overflow-y-auto no-scrollbar pb-24">
         <div className="max-w-4xl mx-auto">
-          {currentView === 'dashboard' && (
+          {currentView === 'home' && (
+            <div className="px-4 py-10 flex flex-col items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md text-center mb-10"
+              >
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1">Minhas Contas</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Escolha o que deseja gerenciar</p>
+              </motion.div>
+
+              <div className="w-full max-w-md grid grid-cols-1 gap-4">
+                <motion.button
+                  type="button"
+                  onClick={() => setCurrentView('payable')}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-rose-200 dark:hover:border-rose-900 transition-colors flex items-center gap-4 text-left"
+                >
+                  <div className="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-200 dark:shadow-none">
+                    <TrendingDown size={28} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Contas a Pagar</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Dívidas e pagamentos</p>
+                  </div>
+                  <ChevronRight className="text-slate-300 dark:text-slate-600" size={24} />
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  onClick={() => setCurrentView('receivable')}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-colors flex items-center gap-4 text-left"
+                >
+                  <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
+                    <TrendingUp size={28} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Contas a Receber</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Recebimentos e valores</p>
+                  </div>
+                  <ChevronRight className="text-slate-300 dark:text-slate-600" size={24} />
+                </motion.button>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'payable' && (
             <div className="px-4 py-8 flex flex-col">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 order-2 sm:order-1">
@@ -1044,15 +1099,21 @@ export default function App() {
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-2 pb-safe z-40 transition-colors duration-300">
         <div className="max-w-md mx-auto flex justify-between items-center h-16">
           <button 
-            onClick={() => setCurrentView('dashboard')}
-            className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'dashboard' ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            onClick={() => setCurrentView('home')}
+            className={`flex flex-col items-center gap-1 transition-colors ${(currentView === 'home' || currentView === 'payable') ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
-            <Home size={24} strokeWidth={currentView === 'dashboard' ? 2.5 : 2} />
+            <Home size={24} strokeWidth={(currentView === 'home' || currentView === 'payable') ? 2.5 : 2} />
             <span className="text-[10px] font-medium">Início</span>
           </button>
 
           <button 
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              if (currentView === 'receivable') {
+                setIsAddReceivableModalOpen(true);
+              } else {
+                setIsAddModalOpen(true);
+              }
+            }}
             className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none -mt-8 hover:bg-emerald-700 transition-colors active:scale-95"
           >
             <Plus size={28} />
