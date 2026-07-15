@@ -6,13 +6,17 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
+  const isAndroid = mode === 'android';
+  const base = isAndroid ? './' : '/minhas-contas/';
+
   return {
+    base,
     plugins: [
       react(),
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        includeAssets: ['favicon.ico', 'icons/apple-touch-icon.png', 'icons/icon-192.png'],
         manifest: {
           name: 'Minhas Contas',
           short_name: 'Minhas Contas',
@@ -21,15 +25,17 @@ export default defineConfig(({ mode }) => {
           background_color: '#020617',
           display: 'standalone',
           orientation: 'portrait',
+          start_url: isAndroid ? './' : '/minhas-contas/',
+          scope: isAndroid ? './' : '/minhas-contas/',
           icons: [
             {
-              src: 'https://img.icons8.com/fluency/192/000000/money-transfer.png',
+              src: 'icons/icon-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any maskable'
             },
             {
-              src: 'https://img.icons8.com/fluency/512/000000/money-transfer.png',
+              src: 'icons/icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any maskable'
@@ -48,7 +54,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };
