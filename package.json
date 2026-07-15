@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
+    "build:android": "vite build --mode android",
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android",
+    "android:build": "vite build --mode android && cap sync android",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
