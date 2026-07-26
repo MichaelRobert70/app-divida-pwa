@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK and PWA
 
 on:
   push:
@@ -14,6 +14,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -22,6 +24,15 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
+
+    - name: Build PWA
+      run: npm run build
+
+    - name: Copy PWA to releases
+      run: |
+        rm -rf releases/pwa
+        mkdir -p releases/pwa
+        cp -r dist/* releases/pwa/
 
     - name: Build web for Android
       run: npm run build:android
@@ -50,8 +61,15 @@ jobs:
         chmod +x ./gradlew
         ./gradlew assembleDebug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+    - name: Copy APK to releases
+      run: |
+        mkdir -p releases/android
+        cp android/app/build/outputs/apk/debug/app-debug.apk releases/android/MinhasContas-debug.apk
+
+    - name: Commit and push release artifacts
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add releases/
+        git diff --cached --quiet || git commit -m "chore(releases): update android apk and pwa artifacts [skip ci]"
+        git push
