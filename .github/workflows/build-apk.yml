@@ -29,7 +29,16 @@ jobs:
       run: npm run lint || true
 
     - name: Build PWA
-      run: npm run build
+      run: |
+        npm run build 2>&1 | tee build-pwa.log
+        exit ${PIPESTATUS[0]}
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: build-pwa.log
 
     - name: Copy PWA to releases
       run: |
