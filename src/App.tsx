@@ -233,7 +233,9 @@ const ProfileScreen = ({
             </div>
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 bg-emerald-600 text-white p-1.5 rounded-full shadow-lg hover:bg-emerald-700 transition-colors"
+              type="button"
+              aria-label="Alterar foto de perfil"
+              className="absolute -bottom-1 -right-1 w-8 h-8 min-w-[32px] min-h-[32px] bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-colors flex items-center justify-center border-2 border-white dark:border-slate-900"
             >
               <Camera size={14} />
             </button>
@@ -300,11 +302,14 @@ const ProfileScreen = ({
           </div>
           <button 
             onClick={toggleDarkMode}
-            className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${isDarkMode ? 'bg-emerald-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+            type="button"
+            aria-label="Alternar tema escuro"
+            aria-pressed={isDarkMode}
+            className={`relative w-14 h-8 rounded-full transition-colors duration-200 focus:outline-none ${isDarkMode ? 'bg-emerald-600' : 'bg-slate-200 dark:bg-slate-700'}`}
           >
             <motion.div 
               animate={{ x: isDarkMode ? 24 : 4 }}
-              className="absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow-sm"
+              className="absolute top-1 left-0 w-6 h-6 bg-white rounded-full shadow-sm"
             />
           </button>
         </div>
