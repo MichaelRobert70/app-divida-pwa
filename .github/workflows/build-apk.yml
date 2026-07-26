@@ -20,7 +20,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
 
     - name: Install dependencies
       run: npm install
@@ -29,16 +29,7 @@ jobs:
       run: npm run lint || true
 
     - name: Build PWA
-      run: |
-        npm run build 2>&1 | tee build-pwa.log
-        exit ${PIPESTATUS[0]}
-
-    - name: Upload build logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-logs
-        path: build-pwa.log
+      run: npm run build
 
     - name: Copy PWA to releases
       run: |
