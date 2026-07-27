@@ -19,12 +19,15 @@ import {
   Moon,
   Sun,
   Edit2,
-  Download
+  Download,
+  MessageCircle,
+  HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Debt, Payment, Receivable } from './types';
 import { db, type User as LocalUser } from './lib/db';
 import { loginLocal, signupLocal, updatePasswordLocal, updateDisplayNameLocal } from './lib/auth';
+import { Capacitor } from '@capacitor/core';
 
 const AUTH_KEY = 'debt_master_auth_v2';
 const THEME_KEY = 'debt_master_theme_v2';
@@ -62,21 +65,21 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 transition-colors duration-300 no-scrollbar">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 transition-colors duration-300 no-scrollbar pt-safe">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800"
+        className="w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800"
       >
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
-            <TrendingDown size={32} />
+          <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
+            <TrendingDown size={24} />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-100 mb-2">
+        <h1 className="text-xl font-bold text-center text-slate-800 dark:text-slate-100 mb-2">
           {isSignUp ? 'Criar Conta' : 'Bem-vindo ao Minhas Contas'}
         </h1>
-        <p className="text-center text-slate-500 dark:text-slate-400 mb-8">
+        <p className="text-center text-slate-500 dark:text-slate-400 mb-6">
           {isSignUp ? 'Cadastre-se para gerenciar suas contas.' : 'Gerencie suas contas a pagar e a receber de forma simples.'}
         </p>
         
@@ -90,7 +93,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="email" 
                 placeholder="seu@email.com"
@@ -104,7 +107,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Senha</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="password" 
                 placeholder="Sua senha"
@@ -118,10 +121,10 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: any) => void }) => {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
           >
             {loading ? (
-              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               isSignUp ? 'Cadastrar' : 'Entrar'
             )}
@@ -219,16 +222,16 @@ const ProfileScreen = ({
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6">Meu Perfil</h2>
+      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-5">Meu Perfil</h2>
       
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6">
-        <div className="flex items-center gap-4 mb-6">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 mb-5">
+        <div className="flex items-center gap-4 mb-5">
           <div className="relative group">
-            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 overflow-hidden border-2 border-emerald-500/20">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 overflow-hidden border-2 border-emerald-500/20">
               {profileImage ? (
                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
-                <span className="text-3xl font-bold">{userDisplayName.charAt(0).toUpperCase()}</span>
+                <span className="text-2xl font-bold">{userDisplayName.charAt(0).toUpperCase()}</span>
               )}
             </div>
             <button 
@@ -279,16 +282,16 @@ const ProfileScreen = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">{userDisplayName}</h3>
+                <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">{userDisplayName}</h3>
                 <button 
                   onClick={() => setIsEditingName(true)}
                   className="text-slate-400 hover:text-emerald-600 transition-colors"
                 >
-                  <Edit2 size={16} />
+                  <Edit2 size={14} />
                 </button>
               </div>
             )}
-            <p className="text-slate-500 dark:text-slate-400 text-sm">{user?.email}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs">{user?.email}</p>
           </div>
         </div>
       </div>
@@ -297,8 +300,8 @@ const ProfileScreen = ({
         {/* Dark Mode Toggle */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300">
           <div className="flex items-center gap-3">
-            {isDarkMode ? <Moon size={20} className="text-emerald-500" /> : <Sun size={20} className="text-amber-500" />}
-            <span>Tema Escuro</span>
+            {isDarkMode ? <Moon size={18} className="text-emerald-500" /> : <Sun size={18} className="text-amber-500" />}
+            <span className="text-sm font-medium">Tema Escuro</span>
           </div>
           <button 
             onClick={toggleDarkMode}
@@ -319,8 +322,8 @@ const ProfileScreen = ({
           className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <Lock size={20} className="text-slate-400" />
-            <span>Alterar Senha</span>
+            <Lock size={18} className="text-slate-400" />
+            <span className="text-sm font-medium">Alterar Senha</span>
           </div>
           <ChevronRight size={16} className="text-slate-300 dark:text-slate-600" />
         </button>
@@ -332,15 +335,15 @@ const ProfileScreen = ({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden"
+                className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-xl shadow-2xl overflow-hidden"
               >
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Alterar Senha</h2>
+                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Alterar Senha</h2>
                   <button onClick={() => setIsChangingPassword(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                    <X size={24} />
+                    <X size={20} />
                   </button>
                 </div>
-                <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
+                <form onSubmit={handlePasswordSubmit} className="p-5 space-y-4">
                   {passError && (
                     <div className="p-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-xs rounded-xl border border-rose-100 dark:border-rose-800">
                       {passError}
@@ -372,7 +375,7 @@ const ProfileScreen = ({
                   <button 
                     type="submit"
                     disabled={passLoading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
                   >
                     {passLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Salvar Senha'}
                   </button>
@@ -382,19 +385,48 @@ const ProfileScreen = ({
           )}
         </AnimatePresence>
         
+        <a 
+          href="https://wa.me/5521974234101?text=Olá!%20Preciso%20de%20ajuda%20com%20o%20aplicativo%20Minhas%20Contas."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center text-white">
+              <MessageCircle size={18} />
+            </div>
+            <div className="text-left">
+              <span className="block text-sm font-medium">Falar no WhatsApp</span>
+              <span className="block text-xs text-slate-400 dark:text-slate-500">Suporte, dúvidas e ajuda</span>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-slate-300 dark:text-slate-700" />
+        </a>
+
+        <button 
+          onClick={() => alert('Ajuda: toque em "Falar no WhatsApp" para entrar em contato com o suporte.')}
+          className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <HelpCircle size={18} className="text-emerald-500" />
+            <span className="text-sm font-medium">Ajuda e Suporte</span>
+          </div>
+          <ChevronRight size={16} className="text-slate-300 dark:text-slate-700" />
+        </button>
+
         <button 
           onClick={onLogout}
           className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <LogOut size={20} />
-            <span>Sair da Conta</span>
+            <LogOut size={18} />
+            <span className="text-sm font-medium">Sair da Conta</span>
           </div>
           <ChevronRight size={16} className="text-rose-300 dark:text-rose-800" />
         </button>
       </div>
       
-      <div className="mt-12 text-center">
+      <div className="mt-10 text-center">
         <p className="text-xs text-slate-400 dark:text-slate-600">Versão 1.2.0</p>
         <p className="text-xs text-slate-300 dark:text-slate-700 mt-1">Feito com ❤️ por Minhas Contas</p>
       </div>
@@ -421,28 +453,28 @@ const PWAInstallPrompt = ({
       exit={{ opacity: 0, scale: 0.9, y: -20 }}
       className="fixed top-20 left-4 right-4 z-[100] pointer-events-none"
     >
-      <div className="max-w-md mx-auto bg-emerald-600 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-4 pointer-events-auto border border-white/20">
+      <div className="max-w-md mx-auto bg-emerald-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3 pointer-events-auto border border-white/20">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-            <TrendingDown size={28} />
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <TrendingDown size={22} />
           </div>
           <div>
-            <p className="font-bold text-base">Instalar Minhas Contas</p>
+            <p className="font-bold text-sm">Instalar Minhas Contas</p>
             <p className="text-xs text-emerald-100">Acesso rápido direto da sua tela</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button 
             onClick={onInstall}
-            className="bg-white text-emerald-600 px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg hover:bg-emerald-50 transition-all active:scale-95"
+            className="bg-white text-emerald-600 px-4 py-2 rounded-xl text-sm font-bold shadow-lg hover:bg-emerald-50 transition-all active:scale-95"
           >
             Instalar
           </button>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-2xl transition-colors"
+            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
       </div>
@@ -459,6 +491,7 @@ export default function App() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
@@ -507,7 +540,7 @@ export default function App() {
     };
   }, []);
 
-  // Apply theme
+  // Apply theme & configure native status bar
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -515,6 +548,10 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem(THEME_KEY, 'light');
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      document.documentElement.classList.add('native-app');
     }
   }, [isDarkMode]);
 
@@ -974,21 +1011,23 @@ export default function App() {
       </AnimatePresence>
 
       {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 transition-colors duration-300 pt-safe">
+        <div className="max-w-4xl mx-auto px-4 min-h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white">
-              <TrendingDown size={20} />
+            <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center text-white">
+              <TrendingDown size={18} />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Minhas Contas</h1>
+            <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100">Minhas Contas</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1 min-w-0">
               <span className="hidden sm:inline">Olá, </span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">{userDisplayName}</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[120px] sm:max-w-[200px] md:max-w-none inline-block" title={userDisplayName}>
+                {userDisplayName}
+              </span>
             </div>
             {profileImage && (
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+              <div className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </div>
             )}
@@ -1000,13 +1039,13 @@ export default function App() {
       <main className="flex-1 overflow-y-auto no-scrollbar pb-24">
         <div className="max-w-4xl mx-auto">
           {currentView === 'home' && (
-            <div className="px-4 py-10 flex flex-col items-center">
+            <div className="px-4 py-8 flex flex-col items-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md text-center mb-10"
+                className="w-full max-w-md text-center mb-8"
               >
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1">Minhas Contas</h2>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1">Minhas Contas</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm">Escolha o que deseja gerenciar</p>
               </motion.div>
 
@@ -1018,16 +1057,16 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-rose-200 dark:hover:border-rose-900 transition-colors flex items-center gap-4 text-left"
+                  className="w-full bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-rose-200 dark:hover:border-rose-900 transition-colors flex items-center gap-4 text-left"
                 >
-                  <div className="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-200 dark:shadow-none">
-                    <TrendingDown size={28} />
+                  <div className="w-12 h-12 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-200 dark:shadow-none">
+                    <TrendingDown size={24} />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Contas a Pagar</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Contas e pagamentos</p>
                   </div>
-                  <ChevronRight className="text-slate-300 dark:text-slate-600" size={24} />
+                  <ChevronRight className="text-slate-300 dark:text-slate-600" size={20} />
                 </motion.button>
 
                 <motion.button
@@ -1037,50 +1076,50 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-colors flex items-center gap-4 text-left"
+                  className="w-full bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-colors flex items-center gap-4 text-left"
                 >
-                  <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
-                    <TrendingUp size={28} />
+                  <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none">
+                    <TrendingUp size={24} />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Contas a Receber</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Recebimentos e valores</p>
                   </div>
-                  <ChevronRight className="text-slate-300 dark:text-slate-600" size={24} />
+                  <ChevronRight className="text-slate-300 dark:text-slate-600" size={20} />
                 </motion.button>
               </div>
             </div>
           )}
 
           {currentView === 'payable' && (
-            <div className="px-4 py-8 flex flex-col">
+            <div className="px-4 py-6 flex flex-col">
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 order-2 sm:order-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 order-2 sm:order-1">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
                   <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total a Pagar</p>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.total)}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.total)}</p>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
                   <p className="text-emerald-500 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Pago</p>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.paid)}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.paid)}</p>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
                   <p className="text-rose-500 dark:text-rose-400 text-xs font-semibold uppercase tracking-wider mb-1">Restante</p>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.pending)}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(stats.pending)}</p>
                 </motion.div>
               </div>
 
@@ -1128,21 +1167,21 @@ export default function App() {
 
               {/* Debt List */}
               <div className="space-y-4 order-4">
-                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  <CreditCard size={20} className="text-slate-400 dark:text-slate-500" />
+                <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  <CreditCard size={18} className="text-slate-400 dark:text-slate-500" />
                   {filter === 'all' ? 'Minhas Contas a Pagar' : filter === 'paid' ? 'Contas Pagas' : 'Contas a Pagar'}
                 </h2>
                 
                 {filteredDebts.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-500">
-                      <PieChart size={32} />
+                  <div className="text-center py-10 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400 dark:text-slate-500">
+                      <PieChart size={28} />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400">Nenhuma conta a pagar encontrada.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma conta a pagar encontrada.</p>
                     {filter !== 'all' && (
                       <button 
                         onClick={() => setFilter('all')}
-                        className="mt-4 text-emerald-600 dark:text-emerald-500 font-medium hover:underline"
+                        className="mt-3 text-sm text-emerald-600 dark:text-emerald-500 font-medium hover:underline"
                       >
                         Ver todas as contas
                       </button>
@@ -1155,120 +1194,120 @@ export default function App() {
                       const isPaid = debt.paidAmount >= debt.totalAmount;
 
                       return (
-                        <motion.div
-                          key={debt.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-all group"
-                        >
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{debt.description}</h3>
-                                {debt.category && (
-                                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded-md uppercase tracking-tighter">
-                                    {debt.category}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
-                                {new Date(debt.createdAt).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <button 
-                                onClick={() => {
-                                  setEditingDebt({
-                                    id: debt.id,
-                                    description: debt.description,
-                                    totalAmount: debt.totalAmount.toString(),
-                                    category: debt.category || ''
-                                  });
-                                  setIsEditModalOpen(true);
-                                }}
-                                className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
-                                title="Editar"
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setSelectedDebtId(debt.id);
-                                  setIsPaymentModalOpen(true);
-                                }}
-                                disabled={isPaid}
-                                className={`p-2 rounded-lg transition-colors ${isPaid ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-700' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'}`}
-                                title="Adicionar Pagamento"
-                              >
-                                <DollarSign size={18} />
-                              </button>
-                              <button 
-                                onClick={() => deleteDebt(debt.id)}
-                                className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
-                                title="Excluir"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </div>
+<motion.div
+                  key={debt.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-all group"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">{debt.description}</h3>
+                        {debt.category && (
+                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold rounded-md uppercase tracking-tighter">
+                            {debt.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                        {new Date(debt.createdAt).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <button 
+                        onClick={() => {
+                          setEditingDebt({
+                            id: debt.id,
+                            description: debt.description,
+                            totalAmount: debt.totalAmount.toString(),
+                            category: debt.category || ''
+                          });
+                          setIsEditModalOpen(true);
+                        }}
+                        className="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                        title="Editar"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setSelectedDebtId(debt.id);
+                          setIsPaymentModalOpen(true);
+                        }}
+                        disabled={isPaid}
+                        className={`p-1.5 rounded-lg transition-colors ${isPaid ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-700' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'}`}
+                        title="Adicionar Pagamento"
+                      >
+                        <DollarSign size={16} />
+                      </button>
+                      <button 
+                        onClick={() => deleteDebt(debt.id)}
+                        className="p-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
 
-                          <div className="space-y-3">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-slate-500 dark:text-slate-400">
-                                Pago: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(debt.paidAmount)}</span>
-                              </span>
-                              <span className="text-slate-500 dark:text-slate-400">
-                                Total: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(debt.totalAmount)}</span>
-                              </span>
-                            </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500 dark:text-slate-400">
+                        Pago: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(debt.paidAmount)}</span>
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        Total: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(debt.totalAmount)}</span>
+                      </span>
+                    </div>
 
-                            <div className="relative h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
-                                className={`h-full rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-emerald-400'}`}
-                              />
-                            </div>
+                    <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className={`h-full rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-emerald-400'}`}
+                      />
+                    </div>
 
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center gap-1 text-xs font-medium">
-                                {isPaid ? (
-                                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                    <CheckCircle2 size={14} /> Quitada
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-400 dark:text-slate-500">
-                                    Faltam {formatCurrency(debt.totalAmount - debt.paidAmount)}
-                                  </span>
-                                )}
-                              </div>
-                              <span className={`text-sm font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-200'}`}>
-                                {progress.toFixed(0)}%
-                              </span>
-                            </div>
-                          </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-1 text-xs font-medium">
+                        {isPaid ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Quitada
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500">
+                            Faltam {formatCurrency(debt.totalAmount - debt.paidAmount)}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-sm font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                        {progress.toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
 
-                          {debt.payments.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-800">
-                              <details className="group/details">
-                                <summary className="text-xs font-medium text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 list-none">
-                                  <History size={12} />
-                                  Ver histórico de pagamentos
-                                  <ChevronRight size={12} className="group-open/details:rotate-90 transition-transform" />
-                                </summary>
-                                <div className="mt-2 space-y-2">
-                                  {debt.payments.map(p => (
-                                    <div key={p.id} className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-md">
-                                      <span>{new Date(p.date).toLocaleDateString('pt-BR')}</span>
-                                      <span className="font-bold text-emerald-600 dark:text-emerald-400">+{formatCurrency(p.amount)}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </details>
+                  {debt.payments.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-800">
+                      <details className="group/details">
+                        <summary className="text-xs font-medium text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 list-none">
+                          <History size={10} />
+                          Ver histórico de pagamentos
+                          <ChevronRight size={10} className="group-open/details:rotate-90 transition-transform" />
+                        </summary>
+                        <div className="mt-2 space-y-1">
+                          {debt.payments.map(p => (
+                            <div key={p.id} className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-md">
+                              <span>{new Date(p.date).toLocaleDateString('pt-BR')}</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">+{formatCurrency(p.amount)}</span>
                             </div>
-                          )}
-                        </motion.div>
+                          ))}
+                        </div>
+                      </details>
+                    </div>
+                  )}
+                </motion.div>
                       );
                     })}
                   </div>
@@ -1278,34 +1317,34 @@ export default function App() {
           )}
 
           {currentView === 'receivable' && (
-            <div className="px-4 py-8 flex flex-col">
+            <div className="px-4 py-6 flex flex-col">
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 order-2 sm:order-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 order-2 sm:order-1">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
                   <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total a Receber</p>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.totalReceivable)}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.totalReceivable)}</p>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
                   <p className="text-emerald-500 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Recebido</p>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.totalReceived)}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.totalReceived)}</p>
                 </motion.div>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800"
                 >
                   <p className="text-rose-500 dark:text-rose-400 text-xs font-semibold uppercase tracking-wider mb-1">Restante</p>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.remaining)}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatCurrency(receivableStats.remaining)}</p>
                 </motion.div>
               </div>
 
@@ -1353,21 +1392,21 @@ export default function App() {
 
               {/* Receivable List */}
               <div className="space-y-4 order-4">
-                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  <TrendingUp size={20} className="text-emerald-500" />
+                <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  <TrendingUp size={18} className="text-emerald-500" />
                   {filterReceivable === 'all' ? 'Minhas Contas a Receber' : filterReceivable === 'received' ? 'Contas Recebidas' : 'Contas a Receber'}
                 </h2>
                 
                 {filteredReceivables.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-500">
-                      <TrendingUp size={32} />
+                  <div className="text-center py-10 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400 dark:text-slate-500">
+                      <TrendingUp size={28} />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400">Nenhuma conta a receber encontrada.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma conta a receber encontrada.</p>
                     {filterReceivable !== 'all' && (
                       <button 
                         onClick={() => setFilterReceivable('all')}
-                        className="mt-4 text-emerald-600 dark:text-emerald-500 font-medium hover:underline"
+                        className="mt-3 text-sm text-emerald-600 dark:text-emerald-500 font-medium hover:underline"
                       >
                         Ver todas as contas
                       </button>
@@ -1380,120 +1419,120 @@ export default function App() {
                       const isReceived = receivable.receivedAmount >= receivable.totalAmount;
 
                       return (
-                        <motion.div
-                          key={receivable.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-all group"
-                        >
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{receivable.description}</h3>
-                                {receivable.category && (
-                                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded-md uppercase tracking-tighter">
-                                    {receivable.category}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
-                                {new Date(receivable.createdAt).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <button 
-                                onClick={() => {
-                                  setEditingReceivable({
-                                    id: receivable.id,
-                                    description: receivable.description,
-                                    totalAmount: receivable.totalAmount.toString(),
-                                    category: receivable.category || ''
-                                  });
-                                  setIsEditReceivableModalOpen(true);
-                                }}
-                                className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
-                                title="Editar"
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setSelectedReceivableId(receivable.id);
-                                  setIsReceivablePaymentModalOpen(true);
-                                }}
-                                disabled={isReceived}
-                                className={`p-2 rounded-lg transition-colors ${isReceived ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-700' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'}`}
-                                title="Registrar Recebimento"
-                              >
-                                <DollarSign size={18} />
-                              </button>
-                              <button 
-                                onClick={() => deleteReceivable(receivable.id)}
-                                className="p-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
-                                title="Excluir"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </div>
+<motion.div
+                  key={receivable.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-900 transition-all group"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">{receivable.description}</h3>
+                        {receivable.category && (
+                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold rounded-md uppercase tracking-tighter">
+                            {receivable.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                        {new Date(receivable.createdAt).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <button 
+                        onClick={() => {
+                          setEditingReceivable({
+                            id: receivable.id,
+                            description: receivable.description,
+                            totalAmount: receivable.totalAmount.toString(),
+                            category: receivable.category || ''
+                          });
+                          setIsEditReceivableModalOpen(true);
+                        }}
+                        className="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                        title="Editar"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setSelectedReceivableId(receivable.id);
+                          setIsReceivablePaymentModalOpen(true);
+                        }}
+                        disabled={isReceived}
+                        className={`p-1.5 rounded-lg transition-colors ${isReceived ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-700' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'}`}
+                        title="Registrar Recebimento"
+                      >
+                        <DollarSign size={16} />
+                      </button>
+                      <button 
+                        onClick={() => deleteReceivable(receivable.id)}
+                        className="p-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
 
-                          <div className="space-y-3">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-slate-500 dark:text-slate-400">
-                                Recebido: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(receivable.receivedAmount)}</span>
-                              </span>
-                              <span className="text-slate-500 dark:text-slate-400">
-                                Total: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(receivable.totalAmount)}</span>
-                              </span>
-                            </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500 dark:text-slate-400">
+                        Recebido: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(receivable.receivedAmount)}</span>
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        Total: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatCurrency(receivable.totalAmount)}</span>
+                      </span>
+                    </div>
 
-                            <div className="relative h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
-                                className={`h-full rounded-full ${isReceived ? 'bg-emerald-500' : 'bg-emerald-400'}`}
-                              />
-                            </div>
+                    <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className={`h-full rounded-full ${isReceived ? 'bg-emerald-500' : 'bg-emerald-400'}`}
+                      />
+                    </div>
 
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center gap-1 text-xs font-medium">
-                                {isReceived ? (
-                                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                    <CheckCircle2 size={14} /> Recebida
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-400 dark:text-slate-500">
-                                    Faltam {formatCurrency(receivable.totalAmount - receivable.receivedAmount)}
-                                  </span>
-                                )}
-                              </div>
-                              <span className={`text-sm font-bold ${isReceived ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-200'}`}>
-                                {progress.toFixed(0)}%
-                              </span>
-                            </div>
-                          </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-1 text-xs font-medium">
+                        {isReceived ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Recebida
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-500">
+                            Faltam {formatCurrency(receivable.totalAmount - receivable.receivedAmount)}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-sm font-bold ${isReceived ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                        {progress.toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
 
-                          {receivable.payments.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-800">
-                              <details className="group/details">
-                                <summary className="text-xs font-medium text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 list-none">
-                                  <History size={12} />
-                                  Ver histórico de recebimentos
-                                  <ChevronRight size={12} className="group-open/details:rotate-90 transition-transform" />
-                                </summary>
-                                <div className="mt-2 space-y-2">
-                                  {receivable.payments.map(p => (
-                                    <div key={p.id} className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-md">
-                                      <span>{new Date(p.date).toLocaleDateString('pt-BR')}</span>
-                                      <span className="font-bold text-emerald-600 dark:text-emerald-400">+{formatCurrency(p.amount)}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </details>
+                  {receivable.payments.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-800">
+                      <details className="group/details">
+                        <summary className="text-xs font-medium text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 list-none">
+                          <History size={10} />
+                          Ver histórico de recebimentos
+                          <ChevronRight size={10} className="group-open/details:rotate-90 transition-transform" />
+                        </summary>
+                        <div className="mt-2 space-y-1">
+                          {receivable.payments.map(p => (
+                            <div key={p.id} className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-md">
+                              <span>{new Date(p.date).toLocaleDateString('pt-BR')}</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">+{formatCurrency(p.amount)}</span>
                             </div>
-                          )}
-                        </motion.div>
+                          ))}
+                        </div>
+                      </details>
+                    </div>
+                  )}
+                </motion.div>
                       );
                     })}
                   </div>
@@ -1518,38 +1557,95 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-2 pb-safe z-40 transition-colors duration-300">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-2 pb-safe z-40 transition-colors duration-300">
         <div className="max-w-md mx-auto flex justify-between items-center h-16">
           <button 
             onClick={() => setCurrentView('home')}
             className={`flex flex-col items-center gap-1 transition-colors ${(currentView === 'home' || currentView === 'payable' || currentView === 'receivable') ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
-            <Home size={24} strokeWidth={(currentView === 'home' || currentView === 'payable' || currentView === 'receivable') ? 2.5 : 2} />
-            <span className="text-[10px] font-medium">Início</span>
+            <Home size={22} strokeWidth={(currentView === 'home' || currentView === 'payable' || currentView === 'receivable') ? 2.5 : 2} />
+            <span className="text-xs font-medium">Início</span>
           </button>
 
           <button 
-            onClick={() => {
-              if (currentView === 'receivable') {
-                setIsAddReceivableModalOpen(true);
-              } else {
-                setIsAddModalOpen(true);
-              }
-            }}
-            className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none -mt-8 hover:bg-emerald-700 transition-colors active:scale-95"
+            onClick={() => setIsAddTypeModalOpen(true)}
+            className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 transition-colors active:scale-95"
           >
-            <Plus size={28} />
+            <Plus size={24} />
           </button>
 
           <button 
             onClick={() => setCurrentView('profile')}
             className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'profile' ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
-            <User size={24} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
-            <span className="text-[10px] font-medium">Perfil</span>
+            <User size={22} strokeWidth={currentView === 'profile' ? 2.5 : 2} />
+            <span className="text-xs font-medium">Perfil</span>
           </button>
         </div>
       </div>
+
+      {/* Add Type Selector Modal */}
+      <AnimatePresence>
+        {isAddTypeModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-5"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Novo Registro</h2>
+                <button 
+                  onClick={() => setIsAddTypeModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">O que você deseja registrar?</p>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => {
+                    setIsAddTypeModalOpen(false);
+                    setIsAddModalOpen(true);
+                  }}
+                  className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center text-white">
+                      <TrendingDown size={20} />
+                    </div>
+                    <div className="text-left">
+                      <span className="block font-medium">Contas a Pagar</span>
+                      <span className="block text-xs text-slate-400 dark:text-slate-500">Registrar uma dívida ou conta</span>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-slate-300 dark:text-slate-700" />
+                </button>
+                <button 
+                  onClick={() => {
+                    setIsAddTypeModalOpen(false);
+                    setIsAddReceivableModalOpen(true);
+                  }}
+                  className="w-full bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
+                      <TrendingUp size={20} />
+                    </div>
+                    <div className="text-left">
+                      <span className="block font-medium">Contas a Receber</span>
+                      <span className="block text-xs text-slate-400 dark:text-slate-500">Registrar um recebimento ou valor</span>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-slate-300 dark:text-slate-700" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Add Debt Modal */}
       <AnimatePresence>
@@ -1559,15 +1655,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Nova Conta a Pagar</h2>
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Nova Conta a Pagar</h2>
                 <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleAddDebt} className="p-6 space-y-4">
+              <form onSubmit={handleAddDebt} className="p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
                   <input 
@@ -1609,7 +1705,7 @@ export default function App() {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
                   Adicionar Conta a Pagar
                 </button>
@@ -1620,22 +1716,22 @@ export default function App() {
       </AnimatePresence>
 
       {/* Edit Debt Modal */}
-      <AnimatePresence>
+<AnimatePresence>
         {isEditModalOpen && editingDebt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Editar Conta a Pagar</h2>
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Editar Conta a Pagar</h2>
                 <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleEditDebt} className="p-6 space-y-4">
+              <form onSubmit={handleEditDebt} className="p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
                   <input 
@@ -1677,7 +1773,7 @@ export default function App() {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
                   Salvar Alterações
                 </button>
@@ -1695,15 +1791,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Registrar Pagamento</h2>
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Registrar Pagamento</h2>
                 <button onClick={() => setIsPaymentModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleAddPayment} className="p-6 space-y-4">
+              <form onSubmit={handleAddPayment} className="p-5 space-y-4">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Conta: <span className="font-bold text-slate-700 dark:text-slate-200">
                     {debts.find(d => d.id === selectedDebtId)?.description}
@@ -1724,7 +1820,7 @@ export default function App() {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
                   Confirmar Pagamento
                 </button>
@@ -1742,15 +1838,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Nova Conta a Receber</h2>
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Nova Conta a Receber</h2>
                 <button onClick={() => setIsAddReceivableModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleAddReceivable} className="p-6 space-y-4">
+              <form onSubmit={handleAddReceivable} className="p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
                   <input 
@@ -1792,7 +1888,7 @@ export default function App() {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
                   Adicionar Conta a Receber
                 </button>
@@ -1810,15 +1906,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Editar Conta a Receber</h2>
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Editar Conta a Receber</h2>
                 <button onClick={() => setIsEditReceivableModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleEditReceivable} className="p-6 space-y-4">
+              <form onSubmit={handleEditReceivable} className="p-5 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
                   <input 
@@ -1860,7 +1956,7 @@ export default function App() {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
                   Salvar Alterações
                 </button>
@@ -1878,15 +1974,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Registrar Recebimento</h2>
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Registrar Recebimento</h2>
                 <button onClick={() => setIsReceivablePaymentModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleAddReceivablePayment} className="p-6 space-y-4">
+              <form onSubmit={handleAddReceivablePayment} className="p-5 space-y-4">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Conta: <span className="font-bold text-slate-700 dark:text-slate-200">
                     {receivables.find(r => r.id === selectedReceivableId)?.description}
@@ -1907,7 +2003,7 @@ export default function App() {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
                   Confirmar Recebimento
                 </button>

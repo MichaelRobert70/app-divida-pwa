@@ -1,41 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Configure dark mode to use the .dark class selector */
-@variant dark (&:where(.dark, .dark *));
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-@utility no-scrollbar {
-  &::-webkit-scrollbar {
-    display: none;
-  }
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-@layer base {
-  html, body {
-    @apply no-scrollbar;
-  }
-  
-  body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased transition-colors duration-300;
-  }
-  
-  /* Ensure dark mode only applies when the .dark class is present on html */
-  .dark body {
-    @apply bg-slate-950 text-slate-100;
-  }
+/* Safe area padding for mobile devices */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
 
-  button {
-    touch-action: manipulation;
+/* Ensure minimum top padding on mobile, both PWA and native */
+@media (max-width: 640px) {
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top, 0px), 28px);
   }
 }
 
-.glass-card {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm;
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on buttons */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 640px) {
+  button {
+    min-height: 44px;
+  }
+}
+
+/* Monospace font for currency values */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }

@@ -2,19 +2,75 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Minhas Contas
 
-This contains everything you need to run your app locally.
+PWA para controle de contas a pagar e a receber, com build nativo Android via Capacitor.
 
-View your app in AI Studio: https://ai.studio/apps/dbc6b1f8-c9a1-4d1f-a840-ff1538dcb656
+## Pré-requisitos
 
-## Run Locally
+- **Node.js**
+- Para build Android: **Android Studio** + **JDK 17+**
 
-**Prerequisites:**  Node.js
+## Rodar localmente (PWA)
 
-
-1. Install dependencies:
+1. Instalar dependências:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Configurar `GEMINI_API_KEY` em `.env.local`
+3. Iniciar o servidor de desenvolvimento:
    `npm run dev`
+
+## Build web (PWA)
+
+```
+npm run build
+```
+
+Os arquivos são gerados em `dist/`.
+
+## Build Android (APK)
+
+### Scripts disponíveis
+
+| Script | Descrição |
+|--------|-----------|
+| `npm run build:android` | Build do Vite em modo Android (`--mode android`, `base: './'`) |
+| `npm run cap:sync` | Sincroniza `dist/` com o projeto Android |
+| `npm run cap:open` | Abre o projeto no Android Studio |
+| `npm run android:build` | Build web + sync Capacitor (atalho) |
+
+### Gerar APK de debug
+
+```
+npm run android:build
+cd android
+.\gradlew assembleDebug
+```
+
+O APK é gerado em:
+```
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Gerar APK de release (assinado)
+
+```
+cd android
+.\gradlew assembleRelease
+```
+
+> Requer configuração de keystore em `android/app/build.gradle` (bloco `signingConfigs`).
+
+## Estrutura do projeto
+
+- `public/icons/` — ícones PWA (192, 512, 1024, apple-touch-icon)
+- `android/` — projeto nativo Capacitor (Android Studio)
+- `vite.config.ts` — config com `base` condicional e `VitePWA`
+- `capacitor.config.ts` — config do Capacitor (`appId: com.minhascontas.app`)
+
+## Tecnologias
+
+- React 19 + TypeScript
+- Vite 6 + TailwindCSS 4
+- vite-plugin-pwa (PWA com manifest e service worker)
+- Capacitor 8 (wrapper nativo Android)
+- Dexie (IndexedDB) para persistência local

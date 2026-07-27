@@ -6,3 +6,15 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Capacitor / Android (mantém a pasta android/ versionada, ignora artefatos de build)
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties
+android/app/debug/
+android/app/release/
+*.apk
+*.aab
+*.keystore
