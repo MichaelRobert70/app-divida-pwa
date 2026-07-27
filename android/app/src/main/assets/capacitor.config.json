@@ -1,0 +1,8 @@
+{
+	"appId": "com.minhascontas.app",
+	"appName": "Minhas Contas",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}

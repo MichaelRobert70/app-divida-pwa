@@ -52,8 +52,11 @@ jobs:
         echo "android.useAndroidX=true" >> android/gradle.properties
         echo "android.nonTransitiveRClass=true" >> android/gradle.properties
 
-    - name: Sync Capacitor
-      run: npm run cap:sync
+    - name: Sync Capacitor (copy web assets)
+      run: |
+        rm -rf android/app/src/main/assets/public
+        mkdir -p android/app/src/main/assets/public
+        cp -r dist/* android/app/src/main/assets/public/
 
     - name: Build Android APK
       run: |
