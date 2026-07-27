@@ -53,7 +53,7 @@ jobs:
         echo "android.nonTransitiveRClass=true" >> android/gradle.properties
 
     - name: Sync Capacitor
-      run: npx cap sync android
+      run: npm run cap:sync
 
     - name: Build Android APK
       run: |
